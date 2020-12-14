@@ -1,0 +1,41 @@
+version: '3.8'
+
+volumes:
+  
+  mariadb:
+    driver: local
+
+services:
+  
+  nginx:
+    image: nginx:1.19.4-alpine
+    container_name: nginx
+    volumes: 
+      - ../:/var/www/html
+      - ./nginx/conf/nginx.conf:/etc/nginx/conf/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    ports: 
+      - 8080:80
+      - 8443:443
+    depends_on: 
+      - php-fpm
+      - mariadb
+
+  php-fpm:
+    build:
+      context: ./php-fpm
+    container_name: php-fpm
+    volumes: 
+      - ../:/var/www/html
+    expose: 
+      - 9000
+
+  mariadb:
+    image: mariadb:10.5.8
+    container_name: mariadb
+    volumes: 
+      - ./mariadb/data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
